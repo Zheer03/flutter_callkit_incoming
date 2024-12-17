@@ -254,18 +254,27 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
         
         initCallkitProvider(data)
         
-        let uuid = UUID(uuidString: data.uuid)
+        guard let uuid = UUID(uuidString: data.uuid) else {
+            print("Invalid UUID format: \(data.uuid)")
+            // You might want to send an event to notify about the invalid UUID
+            self.sendEvent("com.hiennv.flutter_callkit_incoming.ERROR", ["message": "Invalid UUID format"])
+            return
+        }
         
         configurAudioSession()
-        self.sharedProvider?.reportNewIncomingCall(with: uuid!, update: callUpdate) { error in
-            if(error == nil) {
-                self.configurAudioSession()
-                let call = Call(uuid: uuid!, data: data)
-                call.handle = data.handle
-                self.callManager.addCall(call)
-                self.sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_INCOMING, data.toJSON())
-                self.endCallNotExist(data)
+        self.sharedProvider?.reportNewIncomingCall(with: uuid, update: callUpdate) { error in
+            if let error = error {
+                print("Failed to report incoming call: \(error.localizedDescription)")
+                self.sendEvent("com.hiennv.flutter_callkit_incoming.ERROR", ["message": error.localizedDescription])
+                return
             }
+            
+            self.configurAudioSession()
+            let call = Call(uuid: uuid, data: data)
+            call.handle = data.handle
+            self.callManager.addCall(call)
+            self.sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_INCOMING, data.toJSON())
+            self.endCallNotExist(data)
         }
     }
     
