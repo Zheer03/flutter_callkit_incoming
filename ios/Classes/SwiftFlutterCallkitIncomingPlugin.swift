@@ -146,8 +146,8 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
                 result(false)
                 return
             }
-            guard let callUUID = UUID(uuidString: callId) ?? UUID(),
-                  let call = self.callManager.callWithUUID(uuid: callUUID) else {
+            let callUUID = UUID(uuidString: callId) ?? UUID()
+            guard let call = self.callManager.callWithUUID(uuid: callUUID) else {
                 result(false)
                 return
             }
@@ -283,8 +283,8 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
     }
     
     @objc public func muteCall(_ callId: String, isMuted: Bool) {
-        guard let callId = UUID(uuidString: callId) ?? UUID(),
-              let call = self.callManager.callWithUUID(uuid: callId)  else {
+        let callIdUUID = UUID(uuidString: callId) ?? UUID()
+        guard let call = self.callManager.callWithUUID(uuid: callIdUUID) else {
             return
         }
         if call.isMuted == isMuted {
@@ -295,8 +295,8 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
     }
     
     @objc public func holdCall(_ callId: String, onHold: Bool) {
-        guard let callId = UUID(uuidString: callId) ?? UUID(),
-              let call = self.callManager.callWithUUID(uuid: callId) else {
+        let callIdUUID = UUID(uuidString: callId) ?? UUID()
+        guard let call = self.callManager.callWithUUID(uuid: callIdUUID) else {
             return
         }
         if call.isOnHold == onHold {
