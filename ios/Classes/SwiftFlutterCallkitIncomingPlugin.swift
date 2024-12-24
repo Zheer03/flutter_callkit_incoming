@@ -146,8 +146,8 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
                 result(false)
                 return
             }
-            let callUUID = UUID(uuidString: callId) ?? UUID()
-            guard let call = self.callManager.callWithUUID(uuid: callUUID) else {
+            guard let callUUID = UUID(uuidString: callId),
+                  let call = self.callManager.callWithUUID(uuid: callUUID) else {
                 result(false)
                 return
             }
@@ -228,7 +228,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
     
     @objc public func getAcceptedCall() -> Data? {
         NSLog("Call data ids \(String(describing: data?.uuid)) \(String(describing: answerCall?.uuid.uuidString))")
-        if data?.uuid.lowercased() == answerCall?.uuid.uuidString?.lowercased() {
+        if data?.uuid.lowercased() == answerCall?.uuid.uuidString.lowercased() {
             return data
         }
         return nil
@@ -254,22 +254,18 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
         
         initCallkitProvider(data)
         
-        let uuid = UUID(uuidString: data.uuid) ?? UUID()
+        let uuid = UUID(uuidString: data.uuid)
         
         configurAudioSession()
-        self.sharedProvider?.reportNewIncomingCall(with: uuid, update: callUpdate) { error in
-            if let error = error {
-                print("Failed to report incoming call: \(error.localizedDescription)")
-                self.sendEvent("com.hiennv.flutter_callkit_incoming.ERROR", ["message": error.localizedDescription])
-                return
+        self.sharedProvider?.reportNewIncomingCall(with: uuid ?? UUID(), update: callUpdate) { error in
+            if(error == nil) {
+                self.configurAudioSession()
+                let call = Call(uuid: uuid ?? UUID(), data: data)
+                call.handle = data.handle
+                self.callManager.addCall(call)
+                self.sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_INCOMING, data.toJSON())
+                self.endCallNotExist(data)
             }
-            
-            self.configurAudioSession()
-            let call = Call(uuid: uuid, data: data)
-            call.handle = data.handle
-            self.callManager.addCall(call)
-            self.sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_INCOMING, data.toJSON())
-            self.endCallNotExist(data)
         }
     }
     
@@ -283,8 +279,8 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
     }
     
     @objc public func muteCall(_ callId: String, isMuted: Bool) {
-        let callIdUUID = UUID(uuidString: callId) ?? UUID()
-        guard let call = self.callManager.callWithUUID(uuid: callIdUUID) else {
+        guard let callId = UUID(uuidString: callId),
+              let call = self.callManager.callWithUUID(uuid: callId) else {
             return
         }
         if call.isMuted == isMuted {
@@ -295,8 +291,8 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
     }
     
     @objc public func holdCall(_ callId: String, onHold: Bool) {
-        let callIdUUID = UUID(uuidString: callId) ?? UUID()
-        guard let call = self.callManager.callWithUUID(uuid: callIdUUID) else {
+        guard let callId = UUID(uuidString: callId),
+              let call = self.callManager.callWithUUID(uuid: callId) else {
             return
         }
         if call.isOnHold == onHold {
