@@ -228,7 +228,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
     
     @objc public func getAcceptedCall() -> Data? {
         NSLog("Call data ids \(String(describing: data?.uuid)) \(String(describing: answerCall?.uuid.uuidString))")
-        if data?.uuid.lowercased() == answerCall?.uuid.uuidString.lowercased() {
+        if data?.uuid.lowercased() == answerCall?.uuid.uuidString?.lowercased() {
             return data
         }
         return nil
